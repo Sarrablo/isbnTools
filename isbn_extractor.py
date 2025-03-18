@@ -1,3 +1,4 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -38,6 +39,24 @@ def search_data_by_title(book_title):
                retrieved_docs=total_len)
     return res
 
+def search_data_by_isbn(isbn):
+    driver.get(
+        "https://www.cultura.gob.es/webISBN/tituloSimpleFilter.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es"
+    )
+    _isbn=driver.find_element(By.ID, "params.cisbnExt")
+    _isbn.send_keys(isbn)
+    buton = driver.find_element(By.XPATH, "//input[@tabindex='109']")
+    buton.click()
+    time.sleep(0.2)
+    soup = bs4.BeautifulSoup(driver.page_source, "html.parser")
+    isbnResultado = soup.find_all("div", {"class": "isbnResultado"})
+    print(isbnResultado)
+    url=isbnResultado[0].find("a")['href']
+    url=f"https://www.cultura.gob.es{url}"
+    driver.get(url)
+
+
+
 def get_cover_by_isbn(isbn):
     isbn = isbn.strip()
     isbn=isbn.replace("-","")
@@ -70,6 +89,8 @@ data = ["978-84-932232-5-0 ",
 " 978-84-613-1081-4 ",
 " 978-84-88455-05-5 ",
 " 978-84-936367-2-2 "]
-for a in data:
-    print(get_cover_by_isbn(a))
+#for a in data:
+#    print(get_cover_by_isbn(a))
+
+search_data_by_isbn("978-84-932232-5-0 ")
 input()
