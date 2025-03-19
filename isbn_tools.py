@@ -1,5 +1,6 @@
 """Tools for extract ISBN data"""
 import time
+import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -123,7 +124,8 @@ class IsbnTools:
                     "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td"
                     )
 
-
+        match = re.match(r'^(\d+)', _desc)
+        _pages = match.group(1)
         return dict(isbn_13=_isbn_13,
                     isbn_10=_isbn_10,
                     title=_title,
@@ -132,6 +134,7 @@ class IsbnTools:
                     edition_date=_edition_date,
                     publisher=_publisher,
                     desc=_desc,
+                    pages = _pages,
                     collection=_collection,
                     matter=_matter,
                     price=_price)
@@ -150,6 +153,11 @@ class IsbnTools:
                 By.XPATH, '//object').get_attribute("data")
         except NoSuchElementException:
             return "Not Found"
+
+    def get_full_report(self, isbn):
+        _gob_info = self.search_data_by_isbn(isbn)
+        _cover = dict(cover=self.get_cover_by_isbn(isbn))
+        return _gob_info | _cover
 
     def close(self):
         """Close the driver when the api is closed"""
