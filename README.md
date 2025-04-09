@@ -7,10 +7,10 @@ A Python tool to search for book information and covers using ISBN or book title
 
 - Search for books by title.
 - Search for books by ISBN.
+- Search for books by Advanced search.
 - Retrieve book cover image by ISBN.
 - Automatic web navigation through the Spanish Ministry of Culture and ISBNdb.
 - Custom User-Agent to avoid blocking.
-- `close()` method to properly shut down the browser.
 
 ## 🛠 Requirements
 
@@ -38,11 +38,14 @@ from isbn_tools import IsbnTools  # Assuming the class is saved in isbn_tools.py
 tools = IsbnTools()
 
 # Search by title
-result = tools.search_data_by_title("One Hundred Years of Solitude")
+result = tools.search_data_by_title("Cien años de soledad")
 print(result)
 
 # Search by ISBN
 tools.search_data_by_isbn("9788497592208")
+
+# Search by advanced search
+tools.advanced_search(title="Cien años de soledad", author="Marquez")
 
 # Get book cover
 cover_url = tools.get_cover_by_isbn("9788497592208")
