@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import Select
 import bs4
 
 
@@ -23,6 +24,47 @@ class IsbnTools:
         chrome_options.add_argument("--no-sandbox")
         # Create a new instance of ChromeDriver with the desired options
         self.driver = webdriver.Chrome(options=chrome_options)
+
+    def advanced_search(self,
+                        title=None,
+                        author=None,
+                        collection=None,
+                        editorial=None,
+                        materia=None):
+        """Use the advanced search"""
+        self.driver.get(
+            "https://www.cultura.gob.es/webISBN/tituloSimpleFilter.do?"
+            "cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es"
+        )
+        self.driver.get("https://www.cultura.gob.es/webISBN/buscarLibros.do")
+
+        for _ in range(3):
+            self.driver.find_element(
+                By.XPATH, '//*[@id="anadirFiltro"]/span/input').click()
+
+        filters = {
+            "5": title,
+            "1": author,
+            "2": collection,
+            "3": editorial,
+            "4": materia
+        }
+
+        counter = 109
+
+        for value, text in filters.items():
+            if text:
+                select_element = Select(
+                    self.driver.find_element(
+                        By.XPATH, f"//select[@tabindex='{counter}']"))
+                select_element.select_by_value(value)
+                counter += 1
+                input_element = self.driver.find_element(
+                    By.XPATH, f"//input[@tabindex='{counter}']")
+                input_element.send_keys(text)
+                counter += 2
+
+        input()
 
     def search_data_by_title(self, book_title):
         """Search ISBN in cultura.gob by name"""
@@ -82,47 +124,56 @@ class IsbnTools:
         _language = self.get_data(
             "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[3]/td/span"
         )
-        if "Lengua/s" in self.get_data("/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/th"):
+        if "Lengua/s" in self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/th"
+        ):
             _trad_language = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td/span"
             )
             _edition_date = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td"
+            )
             _publisher = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td/span/a"
             )
             _desc = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td"
+            )
             _binding = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td"
+            )
             _collection = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td/span"
-            ).replace("\t", "").replace("\n","").split(",")[0]
+            ).replace("\t", "").replace("\n", "").split(",")[0]
             _matter = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span"
+            )
             _price = self.get_data(
-                    "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td"
-                    )
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td"
+            )
         else:
-            _trad_language=None
+            _trad_language = None
             _edition_date = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td"
+            )
             _publisher = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td/span/a"
             )
             _desc = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td"
+            )
             _binding = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td")
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td"
+            )
             _collection = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td/span"
-            ).replace("\t", "").replace("\n","").split(",")[0]
+            ).replace("\t", "").replace("\n", "").split(",")[0]
             _matter = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td/span"
-                ).replace("\t", "").replace("\n","")
+            ).replace("\t", "").replace("\n", "")
             _price = self.get_data(
-                    "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td"
-                    )
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td"
+            )
 
         match = re.match(r'^(\d+)', _desc)
         _pages = match.group(1)
@@ -134,7 +185,7 @@ class IsbnTools:
                     edition_date=_edition_date,
                     publisher=_publisher,
                     desc=_desc,
-                    pages = _pages,
+                    pages=_pages,
                     collection=_collection,
                     matter=_matter,
                     price=_price)
@@ -155,6 +206,7 @@ class IsbnTools:
             return "Not Found"
 
     def get_full_report(self, isbn):
+        """Get full report from a ISBN"""
         _gob_info = self.search_data_by_isbn(isbn)
         _cover = dict(cover=self.get_cover_by_isbn(isbn))
         return _gob_info | _cover
