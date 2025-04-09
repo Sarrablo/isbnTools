@@ -32,6 +32,7 @@ class IsbnTools:
                         editorial=None,
                         materia=None):
         """Use the advanced search"""
+
         self.driver.get(
             "https://www.cultura.gob.es/webISBN/tituloSimpleFilter.do?"
             "cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es"
@@ -50,21 +51,45 @@ class IsbnTools:
             "4": materia
         }
 
-        counter = 109
+        tabindex = 109
 
-        for value, text in filters.items():
-            if text:
-                select_element = Select(
+        for select_value, input_text in filters.items():
+            if input_text:
+                Select(
                     self.driver.find_element(
-                        By.XPATH, f"//select[@tabindex='{counter}']"))
-                select_element.select_by_value(value)
-                counter += 1
-                input_element = self.driver.find_element(
-                    By.XPATH, f"//input[@tabindex='{counter}']")
-                input_element.send_keys(text)
-                counter += 2
+                        By.XPATH,
+                        f"//select[@tabindex='{tabindex}']")).select_by_value(
+                            select_value)
+                tabindex += 1
+                self.driver.find_element(
+                    By.XPATH,
+                    f"//input[@tabindex='{tabindex}']").send_keys(input_text)
+                tabindex += 2
 
-        input()
+        self.driver.find_element(By.XPATH, "//input[@tabindex='154']").click()
+
+        soup = bs4.BeautifulSoup(self.driver.page_source, "html.parser")
+        results = soup.find_all("div", class_="isbnResultado")
+
+        if not results:
+            return {"error": "Not Found"}
+
+        total_results = len(results)
+        first_result = results[0]
+        spans = first_result.find_all("span")
+        links = first_result.find_all("a")
+
+        author_text = spans[1].get_text(strip=True).replace("Autor/es:",
+                                                            "").strip()
+
+        return {
+            "isbn": links[0].text,
+            "title": links[1].text,
+            "author": author_text,
+            "editor": links[2].text,
+            "url": links[1]["href"],
+            "retrieved_docs": total_results
+        }
 
     def search_data_by_title(self, book_title):
         """Search ISBN in cultura.gob by name"""
