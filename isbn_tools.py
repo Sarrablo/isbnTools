@@ -24,6 +24,20 @@ class IsbnTools:
         chrome_options.add_argument("--no-sandbox")
         # Create a new instance of ChromeDriver with the desired options
         self.driver = webdriver.Chrome(options=chrome_options)
+        self.TRADUCTIONS ={
+ 'Título:': 'title',
+ 'Autor/es:': 'author',
+ 'Lengua de publicación:': 'publish_language',
+ 'Lengua/s de traducción:': 'traduction_language',
+ 'Edición:': 'edition',
+ 'Fecha Edición:': 'edition_date',
+ 'Fecha Impresión:': 'printed_date',
+ 'Publicación:': 'publisher',
+ 'Descripción:': 'desc',
+ 'Encuadernación:': 'format',
+ 'Materia/s:': 'matter',
+ 'Precio:': 'price'}
+
 
     def advanced_search(self,
                         title=None,
@@ -143,80 +157,21 @@ class IsbnTools:
         self.driver.get(url)
         _isbn_13 = self.get_data(
             "/html/body/div[1]/div[1]/div[3]/div/div[2]/div[1]/span/strong")
-        _isbn_10 = self.get_data(
-            "/html/body/div[1]/div[1]/div[3]/div/div[2]/div[2]/span/strong")
-        _title = self.get_data(
-            "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[1]/td/strong"
-        )
-        _language = self.get_data(
-            "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[3]/td/span"
-        )
-        if "Lengua/s" in self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/th"
-        ):
-            _trad_language = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td/span"
-            )
-            _edition_date = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td"
-            )
-            _publisher = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td/span/a"
-            )
-            _desc = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td"
-            )
-            _binding = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td"
-            )
-            _collection = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span"
-            ).replace("\t", "").replace("\n", "").split(",")[0]
-            _matter = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td/span"
-            ).replace("\t", "").replace("\n", "")
-            _price = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[12]/td"
-            )
-        else:
-            _trad_language = None
-            _edition_date = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td"
-            )
-            _publisher = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td/span/a"
-            )
-            _desc = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td"
-            )
-            _binding = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td"
-            )
-            _collection = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td/span"
-            ).replace("\t", "").replace("\n", "").split(",")[0]
-            _matter = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span"
-            ).replace("\t", "").replace("\n", "")
-            _price = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td"
-            )
-
-        match = re.match(r'^(\d+)', _desc)
+        try:
+            _isbn_10 = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/div[2]/span/strong")
+        except NoSuchElementException:
+            _isbn_10 = None
+        
+        cont_soup = bs4.BeautifulSoup(self.driver.page_source, "html.parser")
+        res = cont_soup.find_all("tr")
+        result=dict(isbn_13=_isbn_13,isbn_10=_isbn_10)
+        for item in res:
+            result[self.TRADUCTIONS.get(item.find("th").text)]= item.find("td").text.split(";")[0].strip()
+        match = re.match(r'^(\d+)', result['desc'])
         _pages = match.group(1)
-        return dict(isbn_13=_isbn_13,
-                    isbn_10=_isbn_10,
-                    title=_title,
-                    author=_author,
-                    language=_language,
-                    trad_language=_trad_language,
-                    edition_date=_edition_date,
-                    publisher=_publisher,
-                    desc=_desc,
-                    pages=_pages,
-                    collection=_collection,
-                    matter=_matter,
-                    price=_price)
+        result["pages"]=_pages 
+        return result
 
     def get_cover_by_isbn(self, isbn):
         """Get the book cover from ISBN"""
