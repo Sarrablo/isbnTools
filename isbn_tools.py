@@ -156,6 +156,29 @@ class IsbnTools:
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td/span"
             )
             _edition_date = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td"
+            )
+            _publisher = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td/span/a"
+            )
+            _desc = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td"
+            )
+            _binding = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td"
+            )
+            _collection = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span"
+            ).replace("\t", "").replace("\n", "").split(",")[0]
+            _matter = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td/span"
+            ).replace("\t", "").replace("\n", "")
+            _price = self.get_data(
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[12]/td"
+            )
+        else:
+            _trad_language = None
+            _edition_date = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td"
             )
             _publisher = self.get_data(
@@ -172,32 +195,9 @@ class IsbnTools:
             ).replace("\t", "").replace("\n", "").split(",")[0]
             _matter = self.get_data(
                 "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td/span"
-            )
-            _price = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td"
-            )
-        else:
-            _trad_language = None
-            _edition_date = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[4]/td"
-            )
-            _publisher = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[5]/td/span/a"
-            )
-            _desc = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[6]/td"
-            )
-            _binding = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[7]/td"
-            )
-            _collection = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[8]/td/span"
-            ).replace("\t", "").replace("\n", "").split(",")[0]
-            _matter = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[9]/td/span"
             ).replace("\t", "").replace("\n", "")
             _price = self.get_data(
-                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[10]/td"
+                "/html/body/div[1]/div[1]/div[3]/div/div[2]/table/tbody/tr[11]/td"
             )
 
         match = re.match(r'^(\d+)', _desc)
