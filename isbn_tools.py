@@ -136,6 +136,8 @@ class IsbnTools:
         time.sleep(0.2)
         soup = bs4.BeautifulSoup(self.driver.page_source, "html.parser")
         isbn_resultado = soup.find_all("div", {"class": "isbnResultado"})
+        _author = (((isbn_resultado[0].find_all("span")[1]).text).replace(
+            "\n", "").replace("\t", "").replace("Autor/es:", "")).strip()
         url = isbn_resultado[0].find("a")['href']
         url = f"https://www.cultura.gob.es{url}"
         self.driver.get(url)
@@ -205,6 +207,7 @@ class IsbnTools:
         return dict(isbn_13=_isbn_13,
                     isbn_10=_isbn_10,
                     title=_title,
+                    author=_author,
                     language=_language,
                     trad_language=_trad_language,
                     edition_date=_edition_date,
